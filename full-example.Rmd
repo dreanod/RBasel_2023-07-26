@@ -103,28 +103,204 @@ the name of the new worksheet. For example:
 
 ## Executing Inline Code
 
-Inline code works the same way as with `knitr`. For example: $\pi = `r pi`$.
-
+Inline code works the same way as with `knitr`. For example: 𝜋= `r pi`.
 
 ## Executing Code Chunks
 
-echo, include, 
+### Evaluation Parameters
 
-error warnings messages
+The following code chunk is not echoed:
 
-rendering data.frames, vector, prints, 
+```{r, echo=FALSE}
+print("Not echoed")
+```
 
-plots (fig.width, ...)
+The following code chunk is not evaluated:
+
+```{r, eval=FALSE}
+print("Not evaluated")
+```
+
+### Errors, Warnings and Messages
+
+Errors, warning and messages are rendered with special styles.
+
+```{r}
+# This is an error
+log("a string")
+```
+
+```{r}
+# This is a warning
+log(-1)
+```
+
+```{r}
+# This is a message
+message("my message")
+```
 
 
 
+### Rendering Basic Types
 
+`knitxl` knows how to render a few basic types.
+
+**Data Frames**:
+
+```{r}
+head(iris)
+```
+
+**Vectors**
+
+Named vector:
+
+```{r}
+islands[1:10]
+```
+
+Unnamed vector:
+
+```{r}
+letters[1:10]
+```
+
+By default other types of object are rendered as a text via the `print` function:
+
+```{r}
+fit <- lm(mpg ~ cyl, data = mtcars)
+summary(fit)
+```
+
+
+### Plots
+
+Currently the only chunk options recognized are `fig.width`, `fig.height` and
+`dpi`:
+
+```{r, fig.width=10, fig.height=10, dpi=150}
+with(mtcars, {
+  plot(mpg~hp, pch=20, col='darkgray')
+  lines(lowess(hp, mpg))
+})
+```
 
 
 # Customizing `knitxl` {ws_name=customize}
 
-## Styling
-
-
 ## Custom renderers
+
+Developers can implement custom rendering function for specific classes.
+For examples, for the class `lm`, we might want to display specific information 
+about the linear model in the output Excel file:
+
+```{r}
+# This is the custom renderer for `lm` objects.
+# It will display the coefficients of the linear model
+# in a table.
+xl_renderer.lm <- function(x, options) {
+  summary(x)$coefficients %>%
+    as.data.frame() %>%
+    knitxl:::new_knitxl_output_data_frame()
+}
+
+registerS3method("xl_renderer", "lm", xl_renderer.lm)
+
+lm_object <- lm(mpg ~ cyl, data = mtcars)
+lm_object
+```
+
+
+
+## Custom styles
+
+Style customization is not yet supported but is being considered for the next
+release. Under the hood, the default style is implemented in this way:
+
+```{r, echo=TRUE, eval=FALSE}
+kxl_style(xl.gridlines = FALSE,
+          xl.fontName = "Calibri",
+          xl.fontSize = 11,
+          xl.rowHeight = 12.75,
+          
+          xl.text.h1.fontName = "Calibri Light (Headings)",
+          xl.text.h1.fontSize = 18,
+          xl.text.h1.fontColour = "#475368",
+          xl.text.h2.fontName = "Calibri (Body)",
+          xl.text.h2.fontSize = 15,
+          xl.text.h2.fontColour = "#475368",
+          xl.text.h2.textDecoration = "bold",
+          xl.text.h2.border = "bottom",
+          xl.text.h2.borderStyle = "thick",
+          xl.text.h2.borderColour = "#4F71BE",
+          
+          xl.text.h3.fontName = "Calibri (Body)",
+          xl.text.h3.fontSize = 13,
+          xl.text.h3.fontColour = "#475368",
+          xl.text.h3.textDecoration = "bold",
+          xl.text.h3.border = "bottom",
+          xl.text.h3.borderStyle = "thick",
+          xl.text.h3.borderColour = "#A6B7DE",
+          
+          xl.text.h4.fontName = "Calibri (Body)",
+          xl.text.h4.fontSize = 11,
+          xl.text.h4.fontColour = "#475368",
+          xl.text.h4.textDecoration = "bold",
+          xl.text.h4.border = "bottom",
+          xl.text.h4.borderStyle = "medium",
+          xl.text.h4.borderColour = "#A6B7DE",
+          
+          xl.text.h5.fontName = "Calibri (Body)",
+          xl.text.h5.fontSize = 11,
+          xl.text.h5.fontColour = "#475368",
+          xl.text.h5.textDecoration = "bold",
+          
+          xl.text.h6.fontName = "Calibri (Body)",
+          xl.text.h6.fontSize = 11,
+          xl.text.h6.fontColour = "#475368",
+          xl.text.h6.textDecoration = "italic",
+          
+          xl.text.hrule.border = "top",
+          xl.text.hrule.borderStyle = "thick",
+          xl.text.hrule.borderColour = "black",
+          
+          xl.text.blockquote.textDecoration = "italic",
+          xl.text.blockquote.indent = 1,
+          xl.text.blockquote.fontColour = "#7F7F7F",
+          
+          xl.text.error.fontColour = "red",
+          xl.text.error.textDecoration = "bold",
+          
+          xl.text.warning.fontColour = "orange",
+          xl.text.warning.textDecoration = "bold",
+          
+          xl.text.message.fontColour = "blue",
+          xl.text.message.textDecoration = "italic",
+          
+          xl.text.output.fontColour = "grey",
+          xl.text.output.fontName = "Courier New",
+          xl.text.output.textDecoration = "italic",
+          
+          xl.text.source.fontName = "Courier New",
+          
+          xl.vector.numFmt = "GENERAL",
+          xl.vector.direction = "vertical",
+          xl.vector.names.textDecoration = "bold",
+          xl.vector.names.border = "right",
+          xl.vector.names.borderStyle = "thin",
+          xl.vector.names.borderColour = "black",
+          
+          xl.table.numFmt = "GENERAL",
+          xl.table.direction = "vertical",
+          xl.table.maxrows = 50,
+          xl.table.colNames = TRUE,
+          xl.table.rowNames = TRUE,
+          xl.table.header.border = "bottom",
+          xl.table.header.textDecoration = "bold",
+          xl.table.header.halign = "center",
+          xl.table.rownames.fontColour = "grey",
+          xl.table.rownames.border = "right")
+```
+
 

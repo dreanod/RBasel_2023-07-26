@@ -1,0 +1,25 @@
+---
+title: "knitxl: Build an Excel Report from an Rmd File"
+author: Denis Dreano
+date: 2023-07-26
+---
+
+# Introduction {ws_name=intro}
+
+`knitxl` is an R package that an turn an _Rmarkdown_ file into an _XLSX_
+spreadsheet report. 
+
+You can install `knitxl` from CRAN:
+
+```{r, eval=FALSE}
+install.packages("knitxl")
+```
+
+You can then knit an RMD file to XLSX simply by using the `knitxl()` function:
+
+```{r, eval=FALSE}
+library(knitxl)
+knitxl("path/to/my_rmd_file.Rmd")
+```
+
+This will create an excel file in `path/to/my_rdm_file.xlsx`

@@ -1,0 +1,187 @@
+---
+title: "knitxl: Build an Excel Report from an Rmd File"
+author: Denis Dreano
+date: 2023-07-26
+---
+
+# Introduction {ws_name=intro}
+
+`knitxl` is an R package that an turn an _Rmarkdown_ file into an _XLSX_
+spreadsheet report. 
+
+You can install `knitxl` from CRAN:
+
+```{r, eval=FALSE}
+install.packages("knitxl")
+```
+
+You can then knit an RMD file to XLSX simply by using the `knitxl()` function:
+
+```{r, eval=FALSE}
+library(knitxl)
+knitxl("path/to/my_rmd_file.Rmd")
+```
+
+This will create an excel file in `path/to/my_rdm_file.xlsx`
+
+# Markdown Support
+
+`knitxl` currently supports the following markdown syntax:
+
+## Headers
+
+********************************************************************************
+
+`knitxl` supports headers.
+
+# Header 1
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6
+
+********************************************************************************
+
+## Inline Syntax
+
+The following inline markdown syntax is supported: *italic*, **bold**, 
+***bold and italic***, ~~strikethrough~~, and inline code blocks:
+`x = 1 + 1`.
+
+This will create a link to [Google](https://www.google.com).
+
+
+## Block Syntax
+
+Code block are supported:
+
+```
+# This is a small Python script:
+
+print('Hello, world!')
+```
+
+> And blockquotes are supported as well.
+
+## Lists
+
+A bullet list:
+
+* Item 1
+* Item 2
+  * Subitem 1
+  * Subitem 2
+
+A numbered list:
+
+1. Item
+2. Item
+  a. Subitem
+  b. Subitem
+
+## Images
+
+This is the R logo: ![Rlogo](Rlogo.png)
+
+## Rules
+
+This is a horizontal rule:
+
+****************
+
+# Create a New Spreadsheet
+
+To create a new worksheet, make a new header with a `ws_name` attribute with
+the name of the new worksheet. For example:
+
+```
+# R Code {ws_name=code}
+```
+
+# R Code {ws_name=code}
+
+## Executing Inline Code
+
+Inline code works the same way as with `knitr`. For example: 𝜋= `r pi`.
+
+## Executing Code Chunks
+
+### Evaluation Parameters
+
+The following code chunk is not echoed:
+
+```{r, echo=FALSE}
+print("Not echoed")
+```
+
+The following code chunk is not evaluated:
+
+```{r, eval=FALSE}
+print("Not evaluated")
+```
+
+### Errors, Warnings and Messages
+
+Errors, warning and messages are rendered with special styles.
+
+```{r}
+# This is an error
+log("a string")
+```
+
+```{r}
+# This is a warning
+log(-1)
+```
+
+```{r}
+# This is a message
+message("my message")
+```
+
+
+
+### Rendering Basic Types
+
+`knitxl` knows how to render a few basic types.
+
+**Data Frames**:
+
+```{r}
+head(iris)
+```
+
+**Vectors**
+
+Named vector:
+
+```{r}
+islands[1:10]
+```
+
+Unnamed vector:
+
+```{r}
+letters[1:10]
+```
+
+By default other types of object are rendered as a text via the `print` function:
+
+```{r}
+fit <- lm(mpg ~ cyl, data = mtcars)
+summary(fit)
+```
+
+
+### Plots
+
+Currently the only chunk options recognized are `fig.width`, `fig.height` and
+`dpi`:
+
+```{r, fig.width=10, fig.height=10, dpi=150}
+with(mtcars, {
+  plot(mpg~hp, pch=20, col='darkgray')
+  lines(lowess(hp, mpg))
+})
+```
